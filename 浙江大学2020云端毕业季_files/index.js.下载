@@ -1,0 +1,489 @@
+var windowWidth = document.documentElement.clientWidth || document.body.clientWidth;
+var windowHeight = document.documentElement.clientHeight || document.body.clientHeight;
+
+//地图原图大小
+var mapWidth = 1920;
+var mapHeight = 1080;
+var browserRatio = 0;
+
+//当前浏览器真正能够用来显示地图的宽高
+if(windowWidth/windowHeight >= mapWidth / mapHeight){
+    //当前浏览器窗口宽高比大于地图原图，则以窗口高度为最大高度
+    var realWindowHeight = windowHeight;
+    var realWindowWidth = realWindowHeight * mapWidth / mapHeight
+    browserRatio = 1;
+}else {
+    //当前浏览器窗口宽高比小于地图原图，则以窗口宽度为最大宽度
+    var realWindowWidth = windowWidth;
+    var realWindowHeight = realWindowWidth * mapHeight / mapWidth
+}
+
+var realMapRatio  = realWindowWidth / mapWidth;
+
+
+//各定点信息
+var pointPosition = [
+    //左边距，上边距，宽，高
+    [56,268,329,186],//直播图
+    //[23,329,15,79],//直播开启时间
+    [false,33,337,72,124],//直播入口
+    [false,33,337,72,124],//直播入口active
+    [192,622,230,201],//课堂
+    /*[420,735,52,119],//课堂入口
+    [420,735,52,119],//课堂入口active*/
+    [false,420,735,72,119],//课堂入口
+    [false,420,735,72,119],//课堂入口active
+    [833,603,224,172],//祝福墙
+    [790,577,52,117],//祝福墙入口
+    [790,577,52,117],//祝福墙入口active
+    [1048,739,262,241],//拍毕业照
+    [1282,785,52,155],//拍毕业照入口
+    [1282,785,52,155],//拍毕业照入口active
+    /*[1282,785,92,155],//拍毕业照入口
+    [1282,785,92,155],//拍毕业照入口active*/
+    [1337,526,145,177],//求是印
+    [1445,496,52,125],//求是印入口
+    [1445,496,52,125],//求是印入口active
+    [1458,754,357,222],//视频
+    /*[1421,794,395,189],//视频
+    [1447,832,52,118],//视频入口
+    [1447,832,52,118],//视频入口active*/
+    [1623,89,229,146],//mc
+    [1558,124,77,138],//mc入口
+    [1558,124,77,138],//mc入口active
+    [417,354,218,32],//校区海宁国际入口
+    [417,354,218,32],//校区海宁国际入口active
+    [450,394,140,20,10],//校区海宁国际打卡
+    [507,309,35,40],//校区海宁国际点击提示
+    [492,660,162,32],//华家池校区入口
+    [492,660,162,32],//华家池校区入口active
+    [500,701,140,20,10],//华家池校区打卡
+    [550,616,35,40],//华家池校区点击提示
+    [805,791,151,32],//之江校区入口
+    [805,791,151,32],//之江校区入口active
+    [808,832,140,20,10],//之江校区打卡
+    [864,747,35,40],//之江校区点击提示
+    [967,567,162,32],//紫金港校区入口
+    [967,567,162,32],//紫金港校区入口active
+    [975,608,140,20,10],//紫金港校区打卡
+    [1029,523,35,40],//紫金港校区点击提示
+    [1080,299,149,32],//玉泉校区入口
+    [1080,299,149,32],//玉泉校区入口active
+    [1083,340,140,20,10],//玉泉校区打卡
+    [1137,255,35,40],//玉泉校区点击提示
+    [1329,389,161,32],//舟山校区入口
+    [1329,389,161,32],//舟山校区入口active
+    [1338,430,140,20,10],//舟山校区打卡
+    [1391,347,35,40],//舟山校区点击提示
+    [1283,720,144,32],//西溪校区入口
+    [1283,720,144,32],//西溪校区入口active
+    [1283,756,140,20,10],//西溪校区打卡
+    [1337,676,35,40],//西溪校区点击提示
+    [664,306,173,32],//访客中心入口
+    [664,306,173,32],//访客中心入口active
+    [733,262,35,40],//访客中心入口点击提示
+]
+
+
+/*******************页面初始化********************/
+
+//初始化视频
+/*var loadstr='<div id="video-box"><video width="99%" height="99%" data-v-f9afb2f2="" disablepictureinpicture="" preload="auto" autoplay="autoplay" controlslist="nodownload noremote footbar" controls="controls" src="https://zju123.oss-cn-hangzhou.aliyuncs.com/storage/video-e.mp4" x5-video-player-type="h5-page" playsinline="true" webkit-playsinline="true"></video></div>'
+$('#video-block,#video-1,#video-1-active').on('click', function(){
+    layer.open({
+        type:1,
+        title: false,
+        skin: 'layui-layer-rim', //加上边框
+        area: ['800px', '440px'],
+        shade: 0,
+        closeBtn: 1,
+        content: loadstr,
+    });
+})*/
+
+//初始化logo
+var realLogoLeft = 760 * realMapRatio
+var realLogoTop = 42 * realMapRatio
+var realLogoWidth = 401 * realMapRatio
+var realLogoHeight = 116 * realMapRatio
+$('#logo').css( {
+    'left':realLogoLeft+'px','top':realLogoTop+'px',
+    'width':realLogoWidth+'px','height':realLogoHeight+'px',
+})
+
+//初始化真实窗口
+
+if(browserRatio==1){
+    var delta = (windowWidth - realWindowWidth)/2;
+}else{
+    var delta = (windowHeight - realWindowHeight)/2
+}
+var realWindowCssInfo = {
+    left:browserRatio==1?delta+"px":'auto',
+    top:browserRatio==0?delta+"px":'auto',
+    width:realWindowWidth+'px',height:realWindowHeight+'px'
+};
+$('#real-window').css(realWindowCssInfo)
+
+
+
+/******************** 事件监听 *********************/
+
+    //每隔5秒获取一次入口统计
+updateEntranceStatistic();
+var entranceStatisticTimer = setInterval(function(){
+    updateEntranceStatistic();
+},5000)
+
+var pointAnimateDelta = 3;
+var pointAnimateSpeed = 800;
+var pointAnimateInterval = 1600;
+
+
+
+//直播模块监听
+var liveAnimateTimer = null;
+var liveAnimateInfos = [
+    //{item:$('#live-block'), index:0},
+    {item:$('#live-2,#live-2-active'), index:1}
+]
+/*$("#live-1,#live-2,#live-2-active,#live-block").hover(function(){
+    $("#live-2").hide();
+    $("#live-2-active").show();
+
+    $('#live-1,#live-2,#live-2-active,#live-block').stop()
+    clearInterval(liveAnimateTimer)
+},function(){
+    $("#live-2").show();
+    $("#live-2-active").hide();
+
+    initPointAnimateTimer('liveAnimateTimer',liveAnimateInfos)
+});
+
+initPointAnimateTimer('liveAnimateTimer',liveAnimateInfos)*/
+
+
+
+//课堂模块监听
+var courseAnimateTimer = null;
+var courseAnimateInfos = [
+    //{item:$('#course-block'), index:3},
+    {item:$('#course-1,#course-1-active'), index:4}
+]
+/*$("#course-1,#course-1-active,#course-block").hover(function(){
+    $("#course-1").hide();
+    $("#course-1-active").show();
+
+    $('#course-1,#course-1-active,#course-block').stop()
+    clearInterval(courseAnimateTimer)
+},function(){
+    $("#course-1").show();
+    $("#course-1-active").hide();
+
+
+    initPointAnimateTimer('courseAnimateTimer',courseAnimateInfos)
+});
+setTimeout(function(){
+    initPointAnimateTimer('courseAnimateTimer',courseAnimateInfos)
+
+},300);*/
+
+
+//祝福墙模块监听
+var wallAnimateTimer = null;
+var wallAnimateInfos = [
+    //{item:$('#wall-block'), index:6},
+    {item:$('#wall-1,#wall-1-active'), index:7}
+]
+$("#wall-1,#wall-1-active,#wall-block").hover(function(){
+    $("#wall-1").hide();
+    $("#wall-1-active").show();
+
+    $('#wall-1,#wall-1-active,#wall-block').stop()
+    clearInterval(wallAnimateTimer)
+},function(){
+    $("#wall-1").show();
+    $("#wall-1-active").hide();
+
+    initPointAnimateTimer('wallAnimateTimer',wallAnimateInfos)
+});
+setTimeout(function(){
+    initPointAnimateTimer('wallAnimateTimer',wallAnimateInfos)
+
+},600);
+
+
+//拍毕业照模块监听
+var photoAnimateTimer = null;
+var photoAnimateInfos = [
+    //{item:$('#photo-block'), index:9},
+    {item:$('#photo-1,#photo-1-active'), index:10}
+]
+$("#photo-1,#photo-1-active,#photo-block").hover(function(){
+    $("#photo-1").hide();
+    $("#photo-1-active").show();
+
+    $('#photo-1,#photo-1-active,#photo-block').stop()
+    clearInterval(photoAnimateTimer)
+},function(){
+    $("#photo-1").show();
+    $("#photo-1-active").hide();
+    initPointAnimateTimer('photoAnimateTimer',photoAnimateInfos)
+});
+
+setTimeout(function(){
+    initPointAnimateTimer('photoAnimateTimer',photoAnimateInfos)
+
+},300);
+$("#photo-1,#photo-1-active,#photo-block").on('click',function(){
+    layer.open({
+        type:1,
+        title: false,
+        shade: 0.5,
+        skin: 'layui-layer-rim', //加上边框
+        area: ['300px', '250px'],
+        closeBtn: 1,
+        content: $("#photo-qrcode-tpl").html()
+    });
+});
+
+//求是印模块监听
+var sealAnimateTimer = null;
+var sealAnimateInfos = [
+    //{item:$('#seal-block'), index:12},
+    {item:$('#seal-1,#seal-1-active'), index:13}
+]
+$("#seal-1,#seal-1-active,#seal-block").hover(function(){
+    $("#seal-1").hide();
+    $("#seal-1-active").show();
+
+    $('#seal-1,#seal-1-active,#seal-block').stop()
+    clearInterval(sealAnimateTimer)
+},function(){
+    $("#seal-1").show();
+    $("#seal-1-active").hide();
+    initPointAnimateTimer('sealAnimateTimer',sealAnimateInfos)
+});
+initPointAnimateTimer('sealAnimateTimer',sealAnimateInfos)
+
+
+//视频模块监听
+/*var videoAnimateTimer = null;
+var videoAnimateInfos = [
+    //{item:$('#video-block'), index:15},
+    {item:$('#video-1,#video-1-active'), index:16}
+]
+$("#video-1,#video-1-active,#video-block").hover(function(){
+    $("#video-1").hide();
+    $("#video-1-active").show();
+
+    $('#video-1,#video-1-active,#video-block').stop()
+    clearInterval(videoAnimateTimer)
+},function(){
+    $("#video-1").show();
+    $("#video-1-active").hide();
+
+    initPointAnimateTimer('videoAnimateTimer',videoAnimateInfos)
+});
+initPointAnimateTimer('videoAnimateTimer',videoAnimateInfos)*/
+
+
+
+//mc模块监听
+var mcAnimateTimer = null;
+var mcAnimateInfos = [
+    //{item:$('#mc-block'), index:18},
+    {item:$('#mc-1,#mc-1-active'), index:17}
+]
+$("#mc-1,#mc-1-active,#mc-block").hover(function(){
+    $("#mc-1").hide();
+    $("#mc-1-active").show();
+
+    $('#mc-1,#mc-1-active,#mc-block').stop()
+    clearInterval(mcAnimateTimer)
+},function(){
+    $("#mc-1").show();
+    $("#mc-1-active").hide();
+
+    initPointAnimateTimer('mcAnimateTimer',mcAnimateInfos)
+});
+initPointAnimateTimer('mcAnimateTimer',mcAnimateInfos)
+
+
+
+
+//校区模块监听
+//海宁国际校区
+$("#u-hngj-1,#u-hngj-1-active,#u-hngj-daka").hover(function(){
+    $("#u-hngj-1").hide();
+    $("#u-hngj-1-active").show();
+},function(){
+    $("#u-hngj-1").show();
+    $("#u-hngj-1-active").hide();
+});
+
+//入口统计
+$("#u-hngj-1,#u-hngj-1-active,#u-hngj-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=hngj',function(result){});
+    window.open("https://720yun.com/t/4dvkseiwr79?scene_id=46316071")
+});
+
+//华家池校区
+$("#u-hjc-1,#u-hjc-1-active,#u-hjc-daka").hover(function(){
+    $("#u-hjc-1").hide();
+    $("#u-hjc-1-active").show();
+},function(){
+    $("#u-hjc-1").show();
+    $("#u-hjc-1-active").hide();
+});
+
+//入口统计
+$("#u-hjc-1,#u-hjc-1-active,#u-hjc-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=hjc',function(result){});
+    window.open("https://720yun.com/t/4dvkseiwr79?scene_id=45896844")
+
+});
+
+//之江校区
+$("#u-zj-1,#u-zj-1-active,#u-zj-daka").hover(function(){
+    $("#u-zj-1").hide();
+    $("#u-zj-1-active").show();
+},function(){
+    $("#u-zj-1").show();
+    $("#u-zj-1-active").hide();
+});
+
+//入口统计
+$("#u-zj-1,#u-zj-1-active,#u-zj-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=zj',function(result){});
+    window.open("https://720yun.com/t/4dvkseiwr79?scene_id=45724005")
+
+});
+
+//紫金港校区
+$("#u-zjg-1,#u-zjg-1-active,#u-zjg-daka").hover(function(){
+    $("#u-zjg-1").hide();
+    $("#u-zjg-1-active").show();
+},function(){
+    $("#u-zjg-1").show();
+    $("#u-zjg-1-active").hide();
+});
+
+//入口统计
+$("#u-zjg-1,#u-zjg-1-active,#u-zjg-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=zjg',function(result){});
+    window.open("https://720yun.com/t/4dvkseiwr79?scene_id=46724253")
+
+});
+
+
+//玉泉校区
+$("#u-yq-1,#u-yq-1-active,#u-yq-daka").hover(function(){
+    $("#u-yq-1").hide();
+    $("#u-yq-1-active").show();
+},function(){
+    $("#u-yq-1").show();
+    $("#u-yq-1-active").hide();
+});
+
+//入口统计
+$("#u-yq-1,#u-yq-1-active,#u-yq-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=yq',function(result){});
+    window.open("https://720yun.com/t/4dvkseiwr79?scene_id=45723986")
+});
+
+//舟山校区
+$("#u-zs-1,#u-zs-1-active,#u-zs-daka").hover(function(){
+    $("#u-zs-1").hide();
+    $("#u-zs-1-active").show();
+},function(){
+    $("#u-zs-1").show();
+    $("#u-zs-1-active").hide();
+});
+
+//入口统计
+$("#u-zs-1,#u-zs-1-active,#u-zs-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=zs',function(result){});
+    window.open("https://720yun.com/t/4dvkseiwr79?scene_id=46737257")
+
+});
+
+//西溪校区
+$("#u-xx-1,#u-xx-1-active,#u-xx-daka").hover(function(){
+    $("#u-xx-1").hide();
+    $("#u-xx-1-active").show();
+},function(){
+    $("#u-xx-1").show();
+    $("#u-xx-1-active").hide();
+});
+
+$("#u-xx-1,#u-xx-1-active,#u-xx-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=xx',function(result){});
+    window.open("https://720yun.com/t/4dvkseiwr79?scene_id=45896843")
+
+});
+
+//访客中心
+$("#v-center,#v-center-active").hover(function(){
+    $("#v-center").hide();
+    $("#v-center-active").show();
+},function(){
+    $("#v-center").show();
+    $("#v-center-active").hide();
+});
+$("#v-center,#v-center-active").on('click',function(){
+    layer.open({
+        type:1,
+        title: false,
+        shade: 0.5,
+        skin: 'layui-layer-rim', //加上边框
+        area: ['300px', '250px'],
+        closeBtn: 1,
+        content: $("#qrcode-tpl").html()
+    });
+});
+
+
+/******************** 自定义方法 *********************/
+
+//初始化point动画计时器
+function initPointAnimateTimer(animateTimerName,pointAnimateInfos){
+
+    for(var i = 0;i<pointAnimateInfos.length;i++){
+        handlePointAnimate(pointAnimateInfos[i].item,pointAnimateInfos[i].index)
+    }
+
+    window[animateTimerName] = setInterval(function(){
+
+        for(var i = 0;i<pointAnimateInfos.length;i++){
+            handlePointAnimate(pointAnimateInfos[i].item,pointAnimateInfos[i].index)
+        }
+    },pointAnimateInterval);
+
+}
+
+//处理point的动画效果
+function handlePointAnimate(obj,point_index){
+    obj.stop().animate({top:(parseInt(pointPosition[point_index][1]*realMapRatio)-pointAnimateDelta)+'px'},pointAnimateSpeed,function(){
+        obj.stop().animate({top:(parseInt(pointPosition[point_index][1]*realMapRatio)+pointAnimateDelta)+'px'},pointAnimateSpeed);
+    });
+}
+
+//入口统计获取数据
+function updateEntranceStatistic(){
+    $.get('/api/v1/index/get_statistic',function(result){
+        var data = result.data;
+        $('#u_hngj_enter').text(data.hngj);
+        $('#u_hjc_enter').text(data.hjc);
+        $('#u_zj_enter').text(data.zj);
+        $('#u_xx_enter').text(data.xx);
+        $('#u_zs_enter').text(data.zs);
+        $('#u_yq_enter').text(data.yq);
+        $('#u_zjg_enter').text(data.zjg);
+    });
+}
+
+
+function randomNum(lower, upper) {
+    return parseInt(Math.floor(Math.random() * (upper - lower)) + lower);
+}
