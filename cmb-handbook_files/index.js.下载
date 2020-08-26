@@ -1,0 +1,258 @@
+var windowWidth = document.documentElement.clientWidth || document.body.clientWidth;
+var windowHeight = document.documentElement.clientHeight || document.body.clientHeight;
+
+//地图原图大小
+var mapWidth = 1920;
+var mapHeight = 1080;
+var browserRatio = 0;
+
+//当前浏览器真正能够用来显示地图的宽高
+if(windowWidth/windowHeight >= mapWidth / mapHeight){
+    //当前浏览器窗口宽高比大于地图原图，则以窗口高度为最大高度
+    var realWindowHeight = windowHeight;
+    var realWindowWidth = realWindowHeight * mapWidth / mapHeight
+    browserRatio = 1;
+}else {
+    //当前浏览器窗口宽高比小于地图原图，则以窗口宽度为最大宽度
+    var realWindowWidth = windowWidth;
+    var realWindowHeight = realWindowWidth * mapHeight / mapWidth
+}
+
+var realMapRatio  = realWindowWidth / mapWidth;
+
+
+//各定点信息
+var pointPosition = [
+    //左边距，上边距，宽，高
+
+    [417,354,218,32],//校区海宁国际入口
+    [417,354,218,32],//校区海宁国际入口active
+    [450,394,140,20,10],//校区海宁国际打卡
+    [507,309,35,40],//校区海宁国际点击提示
+    [492,660,162,32],//华家池校区入口
+    [492,660,162,32],//华家池校区入口active
+    [500,701,140,20,10],//华家池校区打卡
+    [550,616,35,40],//华家池校区点击提示
+    [805,791,151,32],//之江校区入口
+    [805,791,151,32],//之江校区入口active
+    [808,832,140,20,10],//之江校区打卡
+    [864,747,35,40],//之江校区点击提示
+    [967,567,162,32],//紫金港校区入口
+    [967,567,162,32],//紫金港校区入口active
+    [975,608,140,20,10],//紫金港校区打卡
+    [1029,523,35,40],//紫金港校区点击提示
+    [1080,299,149,32],//玉泉校区入口
+    [1080,299,149,32],//玉泉校区入口active
+    [1083,340,140,20,10],//玉泉校区打卡
+    [1137,255,35,40],//玉泉校区点击提示
+    [1329,389,161,32],//舟山校区入口
+    [1329,389,161,32],//舟山校区入口active
+    [1338,430,140,20,10],//舟山校区打卡
+    [1391,347,35,40],//舟山校区点击提示
+    [1283,720,144,32],//西溪校区入口
+    [1283,720,144,32],//西溪校区入口active
+    [1283,756,140,20,10],//西溪校区打卡
+    [1337,676,35,40],//西溪校区点击提示
+    [664,306,173,32],//访客中心入口
+    [664,306,173,32],//访客中心入口active
+    [733,262,35,40],//访客中心入口点击提示
+]
+
+
+/*******************页面初始化********************/
+
+//初始化视频
+/*var loadstr='<div id="video-box"><video width="99%" height="99%" data-v-f9afb2f2="" disablepictureinpicture="" preload="auto" autoplay="autoplay" controlslist="nodownload noremote footbar" controls="controls" src="https://zju123.oss-cn-hangzhou.aliyuncs.com/storage/video-e.mp4" x5-video-player-type="h5-page" playsinline="true" webkit-playsinline="true"></video></div>'
+$('#video-block,#video-1,#video-1-active').on('click', function(){
+    layer.open({
+        type:1,
+        title: false,
+        skin: 'layui-layer-rim', //加上边框
+        area: ['800px', '440px'],
+        shade: 0,
+        closeBtn: 1,
+        content: loadstr,
+    });
+})*/
+
+//初始化logo
+var realLogoLeft = 760 * realMapRatio
+var realLogoTop = 42 * realMapRatio
+var realLogoWidth = 401 * realMapRatio
+var realLogoHeight = 116 * realMapRatio
+$('#logo').css( {
+    'left':realLogoLeft+'px','top':realLogoTop+'px',
+    'width':realLogoWidth+'px','height':realLogoHeight+'px',
+})
+
+//初始化真实窗口
+
+if(browserRatio==1){
+    var delta = (windowWidth - realWindowWidth)/2;
+}else{
+    var delta = (windowHeight - realWindowHeight)/2
+}
+var realWindowCssInfo = {
+    left:browserRatio==1?delta+"px":'auto',
+    top:browserRatio==0?delta+"px":'auto',
+    width:realWindowWidth+'px',height:realWindowHeight+'px'
+};
+$('#real-window').css(realWindowCssInfo)
+
+
+
+/******************** 事件监听 *********************/
+
+    //每隔5秒获取一次入口统计
+updateEntranceStatistic();
+var entranceStatisticTimer = setInterval(function(){
+    updateEntranceStatistic();
+},5000)
+
+var pointAnimateDelta = 3;
+var pointAnimateSpeed = 800;
+var pointAnimateInterval = 1600;
+
+//校区模块监听
+//海宁国际校区
+$("#u-hngj-1,#u-hngj-1-active,#u-hngj-daka").hover(function(){
+    $("#u-hngj-1").hide();
+    $("#u-hngj-1-active").show();
+},function(){
+    $("#u-hngj-1").show();
+    $("#u-hngj-1-active").hide();
+});
+
+//入口统计
+$("#u-hngj-1,#u-hngj-1-active,#u-hngj-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=hngj',function(result){});
+    window.open("https://likaizhou.github.io/cmb-shixi/")
+});
+
+//华家池校区
+//华家池校区
+$("#u-hjc-1,#u-hjc-1-active,#u-hjc-daka").hover(function(){
+    $("#u-hjc-1").hide();
+    $("#u-hjc-1-active").show();
+},function(){
+    $("#u-hjc-1").show();
+    $("#u-hjc-1-active").hide();
+});
+
+//入口统计
+$("#u-hjc-1,#u-hjc-1-active,#u-hjc-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=hjc',function(result){});
+    window.open("https://zhuanlan.zhihu.com/p/161293257")
+
+});
+
+//舟山校区
+$("#u-zs-1,#u-zs-1-active,#u-zs-daka").hover(function(){
+    $("#u-zs-1").hide();
+    $("#u-zs-1-active").show();
+},function(){
+    $("#u-zs-1").show();
+    $("#u-zs-1-active").hide();
+});
+
+//入口统计
+$("#u-zs-1,#u-zs-1-active,#u-zs-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=zs',function(result){});
+    window.open("https://720yun.com/t/4dvkseiwr79?scene_id=46737257")
+
+});
+
+
+//之江校区
+$("#u-zj-1,#u-zj-1-active,#u-zj-daka").hover(function(){
+    $("#u-zj-1").hide();
+    $("#u-zj-1-active").show();
+},function(){
+    $("#u-zj-1").show();
+    $("#u-zj-1-active").hide();
+});
+
+//入口统计
+$("#u-zj-1,#u-zj-1-active,#u-zj-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=zj',function(result){});
+    window.open("https://zhaopin.ccc.cmbchina.com/applicantMobile/?recruitType=campus&timestamp=1598461747760&state=B2Xd1z%2FNx5KwR4YRExyoDQ%3D%3D&openid=9NSQQ5n7g%2BDl4G4ti5nWFLQ2DETLuYZjIKohUac8oTc%3D&channel=WeiXin&signature=7b29dcf411#/")
+
+});
+
+//紫金港校区
+$("#u-zjg-1,#u-zjg-1-active,#u-zjg-daka").hover(function(){
+    $("#u-zjg-1").hide();
+    $("#u-zjg-1-active").show();
+},function(){
+    $("#u-zjg-1").show();
+    $("#u-zjg-1-active").hide();
+});
+
+//入口统计
+$("#u-zjg-1,#u-zjg-1-active,#u-zjg-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=zjg',function(result){});
+    window.open("https://mp.weixin.qq.com/s/n6l8zEbPGFr2QGK71v24VA")
+
+});
+
+
+//玉泉校区
+$("#u-yq-1,#u-yq-1-active,#u-yq-daka").hover(function(){
+    $("#u-yq-1").hide();
+    $("#u-yq-1-active").show();
+},function(){
+    $("#u-yq-1").show();
+    $("#u-yq-1-active").hide();
+});
+
+//入口统计
+$("#u-yq-1,#u-yq-1-active,#u-yq-daka").on('click',function(){
+    $.get('/api/v1/index/u_entrance?u=yq',function(result){});
+    window.open("https://likaizhou.github.io/cmb-mianshi/")
+});
+
+
+
+/******************** 自定义方法 *********************/
+
+//初始化point动画计时器
+function initPointAnimateTimer(animateTimerName,pointAnimateInfos){
+
+    for(var i = 0;i<pointAnimateInfos.length;i++){
+        handlePointAnimate(pointAnimateInfos[i].item,pointAnimateInfos[i].index)
+    }
+
+    window[animateTimerName] = setInterval(function(){
+
+        for(var i = 0;i<pointAnimateInfos.length;i++){
+            handlePointAnimate(pointAnimateInfos[i].item,pointAnimateInfos[i].index)
+        }
+    },pointAnimateInterval);
+
+}
+
+//处理point的动画效果
+function handlePointAnimate(obj,point_index){
+    obj.stop().animate({top:(parseInt(pointPosition[point_index][1]*realMapRatio)-pointAnimateDelta)+'px'},pointAnimateSpeed,function(){
+        obj.stop().animate({top:(parseInt(pointPosition[point_index][1]*realMapRatio)+pointAnimateDelta)+'px'},pointAnimateSpeed);
+    });
+}
+
+//入口统计获取数据
+function updateEntranceStatistic(){
+    $.get('/api/v1/index/get_statistic',function(result){
+        var data = result.data;
+        $('#u_hngj_enter').text(data.hngj);
+        $('#u_hjc_enter').text(data.hjc);
+        $('#u_zj_enter').text(data.zj);
+        $('#u_xx_enter').text(data.xx);
+        $('#u_zs_enter').text(data.zs);
+        $('#u_yq_enter').text(data.yq);
+        $('#u_zjg_enter').text(data.zjg);
+    });
+}
+
+
+function randomNum(lower, upper) {
+    return parseInt(Math.floor(Math.random() * (upper - lower)) + lower);
+}
